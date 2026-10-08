@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Modern Top Header Navigation Bar Layout -->
+<div class="glass-effect border border-slate-200/80 rounded-2xl p-4 mb-8 flex justify-between items-center premium-shadow sticky top-4 z-50">
+    <div class="flex items-center gap-3">
+        <div class="bg-blue-600 text-white w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg shadow-lg shadow-blue-200">S</div>
+        <div>
+            <h1 class="font-bold text-slate-900 text-base leading-tight">Student Resource Vault</h1>
+            <p class="text-xs text-slate-400 font-medium">Academic Repository Access Node</p>
+        </div>
+    </div>
+    <a href="/logout" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md">Logout</a>
+</div>
+
+<!-- Welcome Header Card -->
+<div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-8 rounded-2xl mb-8 text-left shadow-xl shadow-blue-100">
+    <h2 class="text-2xl font-bold">Welcome, {{ session['user_name'] }} 👋</h2>
+    <p class="text-sm opacity-90 mt-1">Authorized Profile Authorization Context: <strong class="underline decoration-wavy decoration-indigo-300 font-bold">{{ session['user_level'] }}</strong></p>
+</div>
+
+<!-- DUAL PRIVILEGE REPS PAST QUESTION UPLOADER COMPLIANCE BLOCK -->
+{% if session['user_role'] == 'Rep' %}
+<div class="bg-gradient-to-r from-purple-600 to-indigo-700 border border-purple-200 rounded-2xl p-6 text-white mb-8 text-left shadow-lg premium-shadow animate-in fade-in duration-300">
+    <h3 class="font-bold text-base flex items-center gap-2 border-b border-purple-400/40 pb-2 mb-4">
+        🔑 Dual Executive Privilege: Course Rep PQ Dispatcher Panel
+    </h3>
+    <form action="/dashboard/student" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        <div class="md:col-span-1">
+            <label class="text-[10px] font-bold text-purple-200 uppercase tracking-wider block mb-1">PQ File Title *</label>
+            <input type="text" name="title" required placeholder="e.g. TCS 405 2024 Exam" class="w-full border border-purple-400/40 bg-purple-900/20 rounded-xl px-3 py-2 text-xs focus:outline-none text-white placeholder-purple-300">
+        </div>
+        <div class="md:col-span-1">
+            <label class="text-[10px] font-bold text-purple-200 uppercase tracking-wider block mb-1">Course Code</label>
+            <select name="course_code" class="w-full border border-purple-400/40 bg-purple-800 text-white rounded-xl px-2 py-2 text-xs focus:outline-none">
+                {% for c in courses %}
+                    <option value="{{ c.course_code }}">{{ c.course_code }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="md:col-span-1">
+            <label class="text-[10px] font-bold text-purple-200 uppercase tracking-wider block mb-1">Target Year Level</label>
+            <select name="level" class="w-full border border-purple-400/40 bg-purple-800 text-white rounded-xl px-2 py-2 text-xs focus:outline-none">
+                <option value="100 Level">100 Level</option>
+                <option value="200 Level">200 Level</option>
+                <option value="300 Level">300 Level</option>
+                <option value="400 Level">400 Level</option>
+            </select>
+        </div>
+        <div class="md:col-span-1">
+            <label class="text-[10px] font-bold text-purple-200 uppercase tracking-wider block mb-1">Target Semester</label>
+            <select name="semester" class="w-full border border-purple-400/40 bg-purple-800 text-white rounded-xl px-2 py-2 text-xs focus:outline-none">
+                <option value="Harmattan Semester">Harmattan Semester</option>
+                <option value="Rain Semester">Rain Semester</option>
+            </select>
+        </div>
+        <div class="md:col-span-1 flex gap-2">
+            <input type="file" name="file" required class="hidden" id="repFile" onchange="document.getElementById('repFileLbl').innerText='✓ File Attached'">
+            <label id="repFileLbl" for="repFile" class="bg-purple-800 hover:bg-purple-900 border border-purple-400/40 px-3 py-2 rounded-xl text-center text-xs font-bold cursor-pointer flex-1 truncate transition-all">📎 Attach PQ File</label>
+            <button type="submit" class="bg-white hover:bg-slate-100 text-purple-700 font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-md">Deploy</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+
+<!-- Search Query Filter Box -->
+<div class="bg-white border border-slate-200/60 rounded-2xl p-4 premium-shadow mb-8 text-left">
+    <form action="/dashboard/student" method="GET" class="flex gap-4 items-center">
+        <input type="text" name="search" value="{{ search_query or '' }}" placeholder="🔍 Search resources by title or course code..." class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+        <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-6 py-3 rounded-xl transition-all">Apply Filter</button>
+    </form>
+</div>
+
+<!-- Dynamic Preview Overlay Modal -->
+<div id="previewModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[10000] justify-center items-center p-4">
+    <div class="bg-white w-full max-w-5xl h-[85vh] rounded-2xl flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+        <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
+            <strong id="modalTitle" class="text-sm font-bold truncate max-w-xl">Document Rendering Channel</strong>
+            <button onclick="closePreview()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all">Close Window ✕</button>
+        </div>
+        <div class="flex-1 bg-slate-100 p-3">
+            <iframe id="previewIframe" src="" class="w-full h-full border-0 rounded-xl bg-white shadow-inner"></iframe>
+        </div>
+    </div>
+</div>
+
+<!-- Repository Folders View -->
+<div class="bg-white border border-slate-200/60 rounded-2xl p-6 premium-shadow text-left">
+    <h3 class="font-bold text-slate-900 text-base mb-6 border-b border-slate-100 pb-3 flex items-center gap-2">
+        <span>📂</span> Academic Departmental Repositories Tree
+    </h3>
+    
+    <div class="space-y-4">
+        {% for current_level in ['100 Level', '200 Level', '300 Level', '400 Level'] %}
+            {% set loop_rank = loop.index %}
+            {% set is_locked = loop_rank > student_rank %}
+            
+            <div class="border border-slate-100 rounded-xl p-4 transition-all {% if is_locked %}bg-slate-50/50 opacity-75{% else %}bg-white hover:border-slate-200{% endif %}">
+                <div class="flex justify-between items-center flex-wrap gap-4">
+                    <h4 class="font-bold text-slate-900 text-sm flex items-center gap-3">
+                        <span class="text-lg">📁</span> {{ current_level }} Repository
+                        {% if is_locked %}
+                            <span class="bg-rose-50 text-rose-600 border border-rose-100 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">🔒 Profile Restricted</span>
+                        {% endif %}
+                    </h4>
+                    {% if not is_locked %}
+                        <button onclick="toggleFolder('folder-{{ loop_rank }}', this)" class="bg-white border border-slate-200 hover:border-slate-300 text-slate-600 px-4 py-2 rounded-xl font-bold text-xs transition-all shadow-sm">Expand Tree ➕</button>
+                    {% endif %}
+                </div>
+
+                {% if not is_locked %}
+                <div id="folder-{{ loop_rank }}" class="hidden mt-4 pt-4 border-t border-dashed border-slate-200 space-y-4">
+                    {% for semester_type in ['Harmattan Semester', 'Rain Semester'] %}
+                        <h5 class="text-xs font-extrabold text-blue-600 uppercase tracking-wider pl-1 mt-2">⚡ {{ semester_type }}</h5>
+                        
+                        {% set sem_files = materials | selectattr('level', 'equalto', current_level) | selectattr('semester', 'equalto', semester_type) | list %}
+                        {% if sem_files %}
+                            <div class="grid grid-cols-1 gap-3">
+                                {% for file in sem_files %}
+                                    <div class="flex justify-between items-center p-4 bg-slate-50/70 border border-slate-100 rounded-xl flex-wrap gap-4 hover:bg-slate-50 transition-all">
+                                        <div class="flex items-center gap-3">
+                                            <span class="bg-blue-50 text-blue-700 border border-blue-100 font-mono font-bold px-2.5 py-1 rounded-lg text-xs">{{ file.course_code }}</span>
+                                            <div>
+                                                <strong class="text-slate-900 text-sm block">{{ file.title }}</strong>
+                                                <span class="text-[11px] text-slate-400 font-medium block mt-0.5">Classification Type: {{ file.material_type }} · Uploaded by {{ file.uploader_display }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button onclick="openPreview('/download/{{ file.file_path }}', '{{ file.title }}')" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-lg transition-all">👁️ Preview</button>
+                                            <a href="/download/{{ file.file_path }}" download class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition-all shadow-md shadow-blue-50">📥 Download</a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-xs text-slate-400 font-medium italic pl-4 py-1">No reference resource assets uploaded yet for this target block.</div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function toggleFolder(id, btn) {
+        const target = document.getElementById(id);
+        if (target.classList.contains('hidden')) {
+            target.classList.remove('hidden');
+            btn.innerText = "Collapse Tree ➖";
+        } else {
+            target.classList.add('hidden');
+            btn.innerText = "Expand Tree ➕";
+        }
+    }
+    function openPreview(url, title) {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('previewIframe').src = url;
+        document.getElementById('previewModal').classList.remove('hidden');
+        document.getElementById('previewModal').classList.add('flex');
+    }
+    function closePreview() {
+        document.getElementById('previewModal').classList.add('hidden');
+        document.getElementById('previewIframe').src = '';
+    }
+</script>
+{% endblock %}

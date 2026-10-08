@@ -1,0 +1,379 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Header Navigation Bar Layout -->
+<div class="glass-effect border border-slate-200 p-4 mb-8 flex justify-between items-center premium-shadow sticky top-4 z-50 rounded-2xl">
+    <div class="flex items-center gap-3">
+        <div class="bg-indigo-600 text-white w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg shadow-lg">Ω</div>
+        <div>
+            <h1 class="font-bold text-slate-900 text-base leading-tight">Admin Dashboard</h1>
+            <p class="text-xs text-slate-400 font-medium">System Administration Panel</p>
+        </div>
+    </div>
+    <div class="flex gap-3">
+        <a href="/admin/download-backup" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-md">
+            📥 Download User List Backup
+        </a>
+        <a href="/logout" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md text-center">Logout</a>
+    </div>
+</div>
+
+<!-- System Metrics Counters Rows -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white border border-slate-100 rounded-2xl p-6 premium-shadow flex items-center justify-between">
+        <div>
+            <span class="text-xs font-bold text-slate-400 tracking-wider uppercase block">Total Students</span>
+            <span class="text-3xl font-extrabold text-slate-900 block mt-1">{{ students_count }}</span>
+        </div>
+        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl">🎓</div>
+    </div>
+    <div class="bg-white border border-slate-100 rounded-2xl p-6 premium-shadow flex items-center justify-between">
+        <div>
+            <span class="text-xs font-bold text-slate-400 tracking-wider uppercase block">Total Lecturers</span>
+            <span class="text-3xl font-extrabold text-slate-900 block mt-1">{{ lecturers_count }}</span>
+        </div>
+        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">👨‍🏫</div>
+    </div>
+    <div class="bg-white border border-slate-100 rounded-2xl p-6 premium-shadow flex items-center justify-between">
+        <div>
+            <span class="text-xs font-bold text-slate-400 tracking-wider uppercase block">Total Uploaded Files</span>
+            <span class="text-3xl font-extrabold text-slate-900 block mt-1">{{ resources_count }}</span>
+        </div>
+        <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl">📚</div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+    
+    <!-- LEFT INPUT FORMS COLUMN -->
+    <div class="lg:col-span-1 flex flex-col gap-6">
+        
+        <!-- AUTOMATED EXCEL BULK ACCOUNT IMPORTER -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 premium-shadow text-left">
+            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
+                <span class="text-emerald-500 text-base">⚡</span> Upload Bulk Users via CSV File
+            </h3>
+            <p class="text-[11px] text-slate-400 font-semibold mb-4 leading-relaxed">
+                Upload a spreadsheet matching the exact columns row layout:<br>
+                <code class="bg-slate-50 text-indigo-600 p-1.5 rounded font-mono block mt-1 border border-slate-100">full_name, email, institutional_id, role, level_or_course, title</code>
+                <span class="block mt-1 text-slate-400 normal-case font-medium">The <code class="text-indigo-500">title</code> column is only used for Lecturer rows (e.g. Dr., Prof., Engr.) — leave it blank for Student/Rep rows.</span>
+            </p>
+            <form action="/dashboard/admin" method="POST" enctype="multipart/form-data" class="space-y-4">
+                <input type="hidden" name="action_type" value="bulk_csv">
+                <div class="border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-xl p-4 transition-all text-center bg-slate-50/50">
+                    <input type="file" name="csv_file" accept=".csv" required class="text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 file:cursor-pointer">
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-3 rounded-xl transition-all shadow-md">
+                    Process Spreadsheet List →
+                </button>
+            </form>
+        </div>
+
+        <!-- END-OF-SESSION LEVEL PROMOTION -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 premium-shadow text-left">
+            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
+                <span class="text-amber-500 text-base">🎓</span> End-of-Session Level Promotion
+            </h3>
+            <p class="text-[11px] text-slate-400 font-semibold mb-4 leading-relaxed">
+                Advances every Student/Rep account one level (100→200→300→400).
+                400 Level students are left unchanged — graduate or remove them manually.
+                This affects <strong class="text-slate-600">all students at once</strong> and cannot be undone automatically.
+            </p>
+            <form action="/admin/promote-levels" method="POST" class="space-y-3"
+                  onsubmit="return confirm('This will promote every eligible student one level. Continue?');">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                        Confirm Your Admin Password *
+                    </label>
+                    <input type="password" name="admin_password" required
+                           placeholder="Re-enter your password to confirm"
+                           class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-amber-500">
+                </div>
+                <button type="submit"
+                        class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs py-2.5 rounded-xl transition-all shadow-md">
+                    Promote All Students →
+                </button>
+            </form>
+        </div>
+
+        <!-- COURSE CREATION FORM -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 premium-shadow text-left">
+            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
+                <span>⚙️</span> Add New Departmental Course
+            </h3>
+            <form action="/dashboard/admin" method="POST" class="space-y-3">
+                <input type="hidden" name="action_type" value="create_course">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Course Code *</label>
+                    <input type="text" name="course_code" placeholder="e.g. TCS 405" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Course Title *</label>
+                    <input type="text" name="course_title" placeholder="e.g. Wireless Communications" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-indigo-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Academic Year Level</label>
+                        <select name="level" class="w-full border border-slate-200 bg-white rounded-xl px-2 py-2 text-xs outline-none">
+                            <option value="100 Level">100 Level</option>
+                            <option value="200 Level">200 Level</option>
+                            <option value="300 Level">300 Level</option>
+                            <option value="400 Level">400 Level</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Semester Track</label>
+                        <select name="semester" class="w-full border border-slate-200 bg-white rounded-xl px-2 py-2 text-xs outline-none">
+                            <option value="Harmattan Semester">Harmattan Semester</option>
+                            <option value="Rain Semester">Rain Semester</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-2.5 rounded-xl transition-all shadow-md">
+                    Add Course Track Item
+                </button>
+            </form>
+        </div>
+
+        <!-- ADMIN DIRECT ROOT MATERIAL MANUAL UPLOAD CARD -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 premium-shadow text-left">
+            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
+                <span>📤</span> Admin Direct File Upload Form
+            </h3>
+            <form action="/dashboard/admin" method="POST" enctype="multipart/form-data" class="space-y-3">
+                <input type="hidden" name="action_type" value="admin_upload">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Material Title *</label>
+                    <input type="text" name="title" required placeholder="e.g. Official Faculty Handbook" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-indigo-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Course Target</label>
+                        <select name="course_code" class="w-full border border-slate-200 bg-white rounded-xl px-2 py-2 text-xs outline-none">
+                            {% for c in courses %}
+                                <option value="{{ c.course_code }}">{{ c.course_code }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">File Type</label>
+                        <select name="material_type" class="w-full border border-slate-200 bg-white rounded-xl px-2 py-2 text-xs outline-none">
+                            <option value="Past Question">Past Question</option>
+                            <option value="Courseware">Courseware Slide</option>
+                            <option value="Lab Manual">Lab Manual</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Target Level</label>
+                        <select name="level" class="w-full border border-slate-200 bg-white rounded-xl px-2 py-2 text-xs outline-none">
+                            <option value="100 Level">100 Level</option>
+                            <option value="200 Level">200 Level</option>
+                            <option value="300 Level">300 Level</option>
+                            <option value="400 Level">400 Level</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Semester</label>
+                        <select name="semester" class="w-full border border-slate-200 bg-white rounded-xl px-2 py-2 text-xs outline-none">
+                            <option value="Harmattan Semester">Harmattan Semester</option>
+                            <option value="Rain Semester">Rain Semester</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Select File *</label>
+                    <input type="file" name="file" required class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-100 file:text-slate-700">
+                </div>
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-2.5 rounded-xl transition-all shadow-md">Upload File Asset</button>
+            </form>
+        </div>
+
+        <!-- ACCOUNT PROVISIONING ENGINE FORM -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 premium-shadow text-left">
+            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
+                <span>👤</span> Create Single Account Form
+            </h3>
+            <form action="/dashboard/admin" method="POST" class="space-y-3">
+                <input type="hidden" name="action_type" value="provision_user">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Full Name *</label>
+                    <input type="text" name="u_name" required placeholder="Surname First Name Middle Name" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Institutional Email Address *</label>
+                    <input type="email" name="u_email" required placeholder="name@unilorin.edu.ng" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-indigo-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Matric / Staff ID *</label>
+                        <input type="text" name="u_id" required placeholder="ID code number" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Account Role *</label>
+                        <select name="u_role" id="rSel" class="w-full border border-slate-200 bg-white rounded-xl px-2 py-2 text-xs outline-none">
+                            <option value="Student">Student</option>
+                            <option value="Rep">Department Rep (President)</option>
+                            <option value="Lecturer">Lecturer</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="studentLevelField">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Student Academic Level</label>
+                    <select name="u_level" class="w-full border border-slate-200 bg-white rounded-xl px-2 py-2 text-xs outline-none">
+                        <option value="100 Level">100 Level</option>
+                        <option value="200 Level">200 Level</option>
+                        <option value="300 Level">300 Level</option>
+                        <option value="400 Level" selected>400 Level</option>
+                    </select>
+                </div>
+                <div id="lecturerCourseField" class="hidden">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Academic Title</label>
+                    <select name="u_title" class="w-full border border-slate-200 bg-white rounded-xl px-2 py-2 text-xs outline-none mb-2">
+                        <option value="">— No title —</option>
+                        <option value="Dr.">Dr.</option>
+                        <option value="Prof.">Prof.</option>
+                        <option value="Engr.">Engr.</option>
+                        <option value="Mr.">Mr.</option>
+                        <option value="Mrs.">Mrs.</option>
+                        <option value="Miss">Miss</option>
+                    </select>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Link Course to Lecturer</label>
+                    <select name="u_course" class="w-full border border-slate-200 bg-white rounded-xl px-2 py-2 text-xs outline-none">
+                        {% for c in courses %}
+                            <option value="{{ c.course_code }}">{{ c.course_code }} - {{ c.course_title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3 rounded-xl transition-all shadow-md">
+                    Create User Account Profile
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- RIGHT MAIN PANELS STREAM LAYER -->
+    <div class="lg:col-span-2 flex flex-col gap-6">
+        
+        <!-- DEPARTMENT COURSE MAP ENTRIES TABLE -->
+        <div class="bg-white border border-slate-200 rounded-2xl premium-shadow overflow-hidden text-left">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h3 class="font-bold text-slate-900 text-sm">📘 Active Departmental Courses Index</h3>
+                <span class="text-[10px] font-bold bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full border border-indigo-100">Live Course Registry</span>
+            </div>
+            <div class="overflow-x-auto max-h-[220px] overflow-y-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            <th class="p-3 pl-6">Course Code</th>
+                            <th class="p-3">Course Title</th>
+                            <th class="p-3">Level Scope</th>
+                            <th class="p-3">Semester</th>
+                            <th class="p-3 text-center pr-6">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-xs font-semibold text-slate-600">
+                        {% for c in courses %}
+                        <tr class="hover:bg-slate-50/40 transition-all">
+                            <td class="p-3 pl-6 font-bold text-indigo-600 font-mono text-xs">{{ c.course_code }}</td>
+                            <td class="p-3 text-slate-900 font-bold text-xs">{{ c.course_title }}</td>
+                            <td class="p-3 text-slate-500">{{ c.level }}</td>
+                            <td class="p-3 text-xs"><span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold">{{ c.semester }}</span></td>
+                            <td class="p-3 flex justify-center pr-6">
+                                <form action="/admin/delete-course/{{ c.id }}" method="POST" onsubmit="return confirm('Remove course track permanent?');">
+                                    <button class="bg-rose-500 hover:bg-rose-600 text-white font-bold text-[10px] px-2.5 py-1 rounded-lg transition-all shadow-sm">Remove Course</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ACTIVE SYSTEM USERS ACCOUNT CORE TABLE -->
+        <div class="bg-white border border-slate-200 rounded-2xl premium-shadow overflow-hidden text-left">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h3 class="font-bold text-slate-900 text-sm">👥 Active System User Directory</h3>
+            </div>
+            <div class="overflow-x-auto max-h-[300px] overflow-y-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            <th class="p-4 pl-6">Full Name</th>
+                            <th class="p-4">Matric / ID Key</th>
+                            <th class="p-4">Account Role</th>
+                            <th class="p-4">Password State</th>
+                            <th class="p-4 text-center pr-6">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-xs font-semibold text-slate-600">
+                        {% for u in users %}
+                        <tr class="hover:bg-slate-50/40 transition-all">
+                            <td class="p-4 pl-6 font-bold text-slate-900 text-sm">{{ (u.title + ' ') if u.title else '' }}{{ u.full_name }}</td>
+                            <td class="p-4 font-mono text-slate-500">{{ u.institutional_id }}</td>
+                            <td class="p-4">
+                                <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded font-bold text-[10px] border border-slate-200">
+                                    {{ u.role }} {% if u.assigned_course_code %}({{ u.assigned_course_code }}){% endif %}
+                                </span>
+                            </td>
+                            <td class="p-4">
+                                <span class="px-2.5 py-1 rounded-full font-bold text-[10px] {{ 'bg-amber-50 text-amber-600 border border-amber-100' if u.password_status == 'Default' else 'bg-emerald-50 text-emerald-600 border border-emerald-100' }}">
+                                    {{ u.password_status }} Pass
+                                </span>
+                            </td>
+                            <td class="p-4 flex gap-1.5 justify-center pr-6">
+                                <form action="/admin/reset-user-password/{{ u.id }}" method="POST">
+                                    <button class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition-all shadow-sm">Reset</button>
+                                </form>
+                                <form action="/admin/delete-user/{{ u.id }}" method="POST" onsubmit="return confirm('Delete user permanent?');">
+                                    <button class="bg-rose-500 hover:bg-rose-600 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition-all shadow-sm">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- RECENT SYSTEM ACTIVITY LOG BLOCK -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl premium-shadow overflow-hidden text-left shadow-xl">
+            <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/40">
+                <div class="flex items-center gap-2">
+                    <span class="animate-ping w-2 h-2 rounded-full bg-emerald-400 inline-block mr-1"></span>
+                    <h3 class="font-bold text-slate-200 text-sm">🔒 Recent System Activity Log</h3>
+                </div>
+                <span class="text-[9px] font-bold uppercase tracking-widest bg-slate-800 text-slate-400 px-2.5 py-1 rounded-md border border-slate-700">Real-Time</span>
+            </div>
+            <div class="p-4 max-h-[250px] overflow-y-auto font-mono text-[11px] text-slate-300 space-y-2 bg-slate-950/30">
+                {% for log in logs %}
+                    <div class="flex gap-4 p-2 rounded border border-slate-800/40 bg-slate-900/60 transition-all hover:bg-slate-900 items-start">
+                        <span class="text-indigo-400 font-bold shrink-0">[{{ log.timestamp.strftime('%H:%M:%S') }}]</span>
+                        <p class="text-slate-200 leading-normal font-medium">{{ log.action }}</p>
+                    </div>
+                {% else %}
+                    <div class="text-center text-slate-500 py-8 italic font-semibold">No recent system activity detected.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    document.getElementById('rSel').addEventListener('change', function() {
+        const sf = document.getElementById('studentLevelField');
+        const lf = document.getElementById('lecturerCourseField');
+        if(this.value === 'Student' || this.value === 'Rep') {
+            sf.classList.remove('hidden');
+            lf.classList.add('hidden');
+        } else {
+            sf.classList.add('hidden');
+            lf.classList.remove('hidden');
+        }
+    });
+</script>
+{% endblock %}

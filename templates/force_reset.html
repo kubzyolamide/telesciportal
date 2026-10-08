@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="min-h-[70vh] flex items-center justify-center">
+  <div class="w-full max-w-md">
+
+    <div class="glass-effect premium-shadow border border-slate-200/80 rounded-2xl p-8">
+      <div class="mb-6 text-center">
+        <div class="text-3xl mb-2">🔒</div>
+        <h1 class="text-lg font-extrabold text-slate-800">Set a New Password</h1>
+        <p class="text-xs font-medium text-slate-500 mt-1">
+          Your account is still using a default password. Please set a new one to continue.
+        </p>
+      </div>
+
+      <form method="POST" action="{{ url_for('force_reset') }}" id="reset-form" class="space-y-4">
+
+        <div>
+          <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500">New Password</label>
+          <input
+            type="password"
+            name="new_password"
+            id="new_password"
+            required
+            class="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-800/10 focus:border-slate-400"
+            placeholder="Enter your new password"
+          >
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Confirm New Password</label>
+          <input
+            type="password"
+            name="confirm_password"
+            id="confirm_password"
+            required
+            class="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-800/10 focus:border-slate-400"
+            placeholder="Re-enter your new password"
+          >
+        </div>
+
+        <!-- Live password guidelines -->
+        <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-1.5" id="guidelines">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Password must have:</p>
+
+          <div class="flex items-center gap-2 text-xs font-semibold text-slate-400" data-rule="length">
+            <span class="rule-icon">○</span>
+            <span data-len-label>
+              {% if session.get('user_role') == 'Lecturer' %}At least 10 characters{% else %}At least 8 characters{% endif %}
+            </span>
+          </div>
+          <div class="flex items-center gap-2 text-xs font-semibold text-slate-400" data-rule="letter">
+            <span class="rule-icon">○</span><span>At least one letter (A–Z or a–z)</span>
+          </div>
+          <div class="flex items-center gap-2 text-xs font-semibold text-slate-400" data-rule="number">
+            <span class="rule-icon">○</span>
+            <span data-num-label>
+              {% if session.get('user_role') == 'Lecturer' %}At least two numbers{% else %}At least one number{% endif %}
+            </span>
+          </div>
+          <div class="flex items-center gap-2 text-xs font-semibold text-slate-400" data-rule="special">
+            <span class="rule-icon">○</span><span>At least one special character (e.g. ! @ # $ %)</span>
+          </div>
+          <div class="flex items-center gap-2 text-xs font-semibold text-slate-400" data-rule="match">
+            <span class="rule-icon">○</span><span>Both passwords match</span>
+          </div>
+
+          {% if session.get('user_role') == 'Lecturer' %}
+          <p class="text-[10px] font-medium text-slate-400 pt-1">
+            Lecturer accounts require a stronger password because of upload access to course materials.
+          </p>
+          {% endif %}
+
+          <p class="text-[10px] font-medium text-slate-400 pt-1">
+            Your new password cannot be the same as your current/default password.
+          </p>
+        </div>
+
+        <button
+          type="submit"
+          id="submit-btn"
+          class="w-full bg-slate-800 text-white text-sm font-bold py-3 rounded-xl hover:bg-slate-700 transition-colors"
+        >
+          Update Password
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const isLecturer = {{ 'true' if session.get('user_role') == 'Lecturer' else 'false' }};
+  const requiredNumbers = isLecturer ? 2 : 1;
+
+  const newPasswordEl = document.getElementById('new_password');
+  const confirmEl = document.getElementById('confirm_password');
+
+  function setRule(name, passed) {
+    const row = document.querySelector(`[data-rule="${name}"]`);
+    const icon = row.querySelector('.rule-icon');
+    if (passed) {
+      row.classList.remove('text-slate-400');
+      row.classList.add('text-emerald-600');
+      icon.textContent = '✓';
+    } else {
+      row.classList.remove('text-emerald-600');
+      row.classList.add('text-slate-400');
+      icon.textContent = '○';
+    }
+  }
+
+  function checkPassword() {
+    const pwd = newPasswordEl.value;
+    const confirm = confirmEl.value;
+    const actualMin = isLecturer ? 10 : 8;
+
+    setRule('length', pwd.length >= actualMin);
+    setRule('letter', /[A-Za-z]/.test(pwd));
+    setRule('number', (pwd.match(/[0-9]/g) || []).length >= requiredNumbers);
+    setRule('special', /[!@#$%^&*(),.?":{}|<>_\-+=/\\;'\[\]`~]/.test(pwd));
+    setRule('match', pwd.length > 0 && pwd === confirm);
+  }
+
+  newPasswordEl.addEventListener('input', checkPassword);
+  confirmEl.addEventListener('input', checkPassword);
+</script>
+{% endblock %}

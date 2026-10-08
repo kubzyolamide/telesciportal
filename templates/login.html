@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div id="urlMessageContainer" style="max-width: 450px; margin: 0 auto 15px auto; display: none;">
+    <div id="urlAlertBox" style="background: white; border-left: 5px solid #10b981; color: #1e293b; padding: 14px 20px; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); text-align: left; font-size: 14px; font-weight: 500; display: flex; justify-content: space-between; align-items: center;">
+        <span id="urlAlertText">🔔 Operational Update Process Verified.</span>
+        <button onclick="this.parentElement.parentElement.remove()" style="background:none; border:none; font-size:16px; cursor:pointer; color:#94a3b8;">✕</button>
+    </div>
+</div>
+
+<div style="min-height: 80vh; display: flex; align-items: center; justify-content: center; background-color: #f8fafc; padding: 20px; font-family: sans-serif;">
+    <div style="background: white; padding: 40px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; text-align: center;">
+        
+        <h2 style="margin: 0 0 10px 0; font-size: 26px; font-weight: 700; color: #1e293b;">TeleSci Resource Portal</h2>
+        <p style="margin: 0 0 30px 0; font-size: 14px; color: #64748b;">Department of Telecommunication Science</p>
+
+        <form action="/login" method="POST" style="display: flex; flex-direction: column; gap: 20px;">
+            <div style="text-align: left;">
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #475569;">Email Address / Matric Number / Staff ID *</label>
+                <input type="text" name="login_input" placeholder="Enter your institutional credentials..." required style="width: 100%; padding: 11px 14px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px;">
+            </div>
+
+            <div style="text-align: left; position: relative;">
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #475569;">Account Password *</label>
+                <input type="password" name="password" id="loginPass" placeholder="Enter security passphrase..." required style="width: 100%; padding: 11px 40px 11px 14px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px;">
+                <span onclick="toggleLoginPass(this)" style="position: absolute; right: 14px; top: 36px; cursor: pointer; font-size: 14px;">👁️</span>
+            </div>
+
+            <button type="submit" style="width: 100%; background-color: #2563eb; color: white; padding: 12px; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 5px;">
+                Authenticate Profile →
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleLoginPass(btn) {
+        const field = document.getElementById('loginPass');
+        if (field.type === "password") {
+            field.type = "text";
+            btn.innerText = "🙈";
+        } else {
+            field.type = "password";
+            btn.innerText = "👁️";
+        }
+    }
+</script>
+{% endblock %}

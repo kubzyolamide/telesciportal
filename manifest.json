@@ -1,0 +1,25 @@
+{
+  "name": "TeleSci Academic Resources Distribution Hub",
+  "short_name": "TeleSci Portal",
+  "description": "Department of Telecommunication Science Portal",
+  "start_url": "/login",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#1e293b",
+  "theme_color": "#1e293b",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/906/906343.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/906/906343.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}
